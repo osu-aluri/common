@@ -1,5 +1,5 @@
-## ripple-python-common
-Common Python code for Ripple
+## common
+We mostly use this for pep.py and LETS else they will not working.
 
 - Origin: https://zxq.co/ripple/ripple-python-common
 - Mirror: https://github.com/osuripple/ripple-python-common
