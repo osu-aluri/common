@@ -1,5 +1,5 @@
 import time
-from _mysql import ProgrammingError
+from mysql.connector import ProgrammingError
 
 from common import generalUtils
 from common.constants import gameModes
