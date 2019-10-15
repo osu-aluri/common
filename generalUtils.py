@@ -45,7 +45,7 @@ def stringMd5(s):
 	d.update(s.encode("utf-8"))
 	return d.hexdigest()
 
-def getRank(gameMode=None, __mods=None, acc=None, c300=None, c100=None, c50=None, cmiss=None, *, score_=None):
+def getRank(gameMode=None, __mods=None, acc=None, c300=None, c100=None, c50=None, cmiss=None, any=None, score_=None):
 	"""
 	Return a string with rank/grade for a given score.
 	Used mainly for tillerino
