@@ -1,6 +1,7 @@
 import requests
 from urllib.parse import urlencode
 from common.discord.webhook import Webhook
+from objects import glob
 
 class schiavo:
 	"""
