@@ -34,6 +34,77 @@ def getUserStats(userID, gameMode):
 	# Return stats + game rank
 	return stats
 
+def getUserStatsRx(userID, gameMode):
+	"""
+	Get all user stats relative to `gameMode`
+
+	:param userID:
+	:param gameMode: game mode number
+	:return: dictionary with result
+	"""
+	modeForDB = gameModes.getGameModeForDB(gameMode)
+	stats = glob.db.fetch("""SELECT
+								ranked_score_std_rx AS rankedScore,
+								avg_accuracy_std_rx AS accuracy,
+								playcount_std_rx AS playcount,
+								total_score_std_rx AS totalScore,
+								pp_std_rx AS pp
+								FROM users_stats WHERE id = %s LIMIT 1""".format(gm=modeForDB), [userID])
+
+	# Get game rank
+	stats["gameRank"] = getGameRankRx(userID, gameMode)
+	return stats
+
+
+def getGameRankRx(userID, gameMode):
+	"""
+	Get `userID`'s **in-game rank** (eg: #1337) relative to gameMode
+	:param userID: user id
+	:param gameMode: game mode number
+	:return: game rank
+	"""
+	position = glob.redis.zrevrank("ripple:leaderboard_relax:{}".format(gameModes.getGameModeForDB(gameMode)), userID)
+	if position is None:
+		return 0
+	else:
+		return int(position) + 1
+
+def getGameRankAp(userID, gameMode):
+	"""
+	Get `userID`'s **in-game rank** (eg: #1337) relative to gameMode
+	:param userID: user id
+	:param gameMode: game mode number
+	:return: game rank
+	"""
+	position = glob.redis.zrevrank("ripple:leaderboard_auto:{}".format(gameModes.getGameModeForDB(gameMode)), userID)
+	if position is None:
+		return 0
+	else:
+		return int(position) + 1
+def getUserStatsAp(userID, gameMode):
+	"""
+	Get all user stats relative to `gameMode`
+
+	:param userID:
+	:param gameMode: game mode number
+	:return: dictionary with result
+	"""
+	modeForDB = gameModes.getGameModeForDB(gameMode)
+	# Get stats
+	stats = glob.db.fetch("""SELECT
+								ranked_score_std_ap AS rankedScore,
+								avg_accuracy_std_ap AS accuracy,
+								playcount_std_ap AS playcount,
+								pp_std_auto AS pp
+								FROM users_stats WHERE id = %s LIMIT 1""".format(gm=modeForDB), [userID])
+
+	# Get game rank
+	stats["gameRank"] = getGameRankAp(userID, gameMode)
+
+	# Return stats + game rank
+	return stats
+	
+
 def getIDSafe(_safeUsername):
 	"""
 	Get user ID from a safe username
@@ -66,7 +137,7 @@ def getID(username):
 			return 0
 
 		# Otherwise, save it in redis and return it
-		glob.redis.set("ripple:userid_cache:{}".format(usernameSafe), userID, 3600)	# expires in 1 hour
+		glob.redis.set("ripple:userid_cache:{}".format(usernameSafe), userID, 60)	# expires in 1 minutes
 		return userID
 
 	# Return userid from redis
@@ -126,7 +197,6 @@ def checkLogin(userID, password, ip=""):
 	# Otherwise, check password
 	# Get password data
 	passwordData = glob.db.fetch("SELECT password_md5, salt, password_version FROM users WHERE id = %s LIMIT 1", [userID])
-
 	# Make sure the query returned something
 	if passwordData is None:
 		return False
@@ -1145,3 +1215,16 @@ def updateAchievementsVersion(userID):
 	glob.db.execute("UPDATE users SET achievements_version = %s WHERE id = %s LIMIT 1", [
 		glob.ACHIEVEMENTS_VERSION, userID
 	])
+
+
+def getClan(userID):
+	"""
+	Get userID's clan
+	:param userID: user id
+	:return: username or None
+	"""
+	clanInfo = glob.db.fetch("SELECT clans.tag, clans.id, user_clans.clan, user_clans.user FROM user_clans LEFT JOIN clans ON clans.id = user_clans.clan WHERE user_clans.user = %s LIMIT 1", [userID])
+	username = getUsername(userID)
+	if clanInfo is None:
+		return None
+	return "[" + clanInfo["tag"] + "] " + username

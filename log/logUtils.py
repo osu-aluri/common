@@ -50,6 +50,8 @@ def logMessage(message, alertType = "INFO", messageColor = bcolors.ENDC, discord
 		typeColor=typeColor,
 		messageColor=messageColor,
 		endc=bcolors.ENDC)
+	with open('logs/' + f'{glob.starttime.year}-{glob.starttime.month}-{glob.starttime.day}-{glob.starttime.hour}-{glob.starttime.minute}-{glob.starttime.second}', 'a') as file:
+		file.write(finalMessage + '\n')
 
 	# Log to console
 	if stdout:
