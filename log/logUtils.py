@@ -40,7 +40,6 @@ def logMessage(message, alertType = "INFO", messageColor = bcolors.ENDC, discord
 
 	# Message without colors
 	finalMessage = "[{time}] {type} - {message}".format(time=generalUtils.getTimestamp(), type=alertType, message=message)
-
 	# Message with colors
 	finalMessageConsole = "{typeColor}[{time}] {type}{endc} - {messageColor}{message}{endc}".format(
 		time=generalUtils.getTimestamp(),
